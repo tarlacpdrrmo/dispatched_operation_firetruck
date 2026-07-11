@@ -4,47 +4,230 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Firetruck Operations Data</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; margin: 0; padding: 20px; background-color: #ffffff; color: #1e293b; }
-        #loader { text-align: center; padding: 50px; color: #64748b; font-weight: 600; font-size: 0.9rem; }
-        .header-actions { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .header-actions h2 { font-size: 1rem; font-weight: 800; margin: 0; color: #0f172a; border-left: 4px solid #2563eb; padding-left: 10px; text-transform: uppercase; }
-        .search-box { padding: 8px 16px; border: 1px solid #cbd5e1; border-radius: 20px; font-size: 0.8rem; outline: none; width: 250px; font-family: 'Inter', sans-serif; }
-        .search-box:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
-        .table-container { width: 100%; overflow-x: auto; border-radius: 8px; border: 1px solid #e2e8f0; }
-        table { width: 100%; border-collapse: collapse; text-align: left; }
-        th { background-color: #f8fafc; color: #475569; font-size: 0.65rem; font-weight: 800; text-transform: uppercase; padding: 12px 16px; border-bottom: 2px solid #e2e8f0; position: sticky; top: 0; letter-spacing: 0.5px; }
-        td { padding: 12px 16px; font-size: 0.75rem; color: #334155; border-bottom: 1px solid #f1f5f9; }
-        tr:hover td { background-color: #f8fafc; }
-        .empty-state { text-align: center; padding: 30px; color: #94a3b8; font-weight: 600; }
+        body { 
+            font-family: 'Inter', sans-serif; 
+            margin: 0; 
+            padding: 24px; 
+            background-color: #f1f5f9; 
+            color: #1e293b; 
+        }
+        
+        /* Main Container */
+        .dashboard-container {
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            padding: 24px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Header & Filters */
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 16px;
+        }
+        
+        .header-top h2 { 
+            font-size: 1.1rem; 
+            font-weight: 800; 
+            margin: 0; 
+            color: #0f172a; 
+            border-left: 5px solid #2563eb; 
+            padding-left: 12px; 
+            text-transform: uppercase; 
+            letter-spacing: 0.5px;
+        }
+
+        .record-count {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #2563eb;
+            background: #eff6ff;
+            padding: 6px 12px;
+            border-radius: 20px;
+            border: 1px solid #bfdbfe;
+        }
+
+        .filter-panel {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 20px;
+            background: #f8fafc;
+            padding: 16px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .filter-group label {
+            font-size: 0.65rem;
+            font-weight: 800;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .filter-input { 
+            padding: 10px 14px; 
+            border: 1px solid #cbd5e1; 
+            border-radius: 8px; 
+            font-size: 0.8rem; 
+            outline: none; 
+            font-family: 'Inter', sans-serif; 
+            font-weight: 600;
+            color: #1e293b;
+            background-color: #ffffff;
+            transition: all 0.2s ease;
+        }
+        
+        .filter-input:focus { 
+            border-color: #3b82f6; 
+            box-shadow: 0 0 0 3px rgba(59,130,246,0.15); 
+        }
+
+        .btn-reset {
+            background-color: #f1f5f9;
+            color: #475569;
+            border: 1px solid #cbd5e1;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.2s;
+            height: fit-content;
+            align-self: flex-end;
+            font-family: 'Inter', sans-serif;
+        }
+        .btn-reset:hover {
+            background-color: #e2e8f0;
+            color: #0f172a;
+        }
+
+        /* Table Styles */
+        .table-container { 
+            width: 100%; 
+            overflow-x: auto; 
+            border-radius: 8px; 
+            border: 1px solid #e2e8f0; 
+            max-height: 60vh;
+        }
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            text-align: left; 
+        }
+        th { 
+            background-color: #f8fafc; 
+            color: #475569; 
+            font-size: 0.65rem; 
+            font-weight: 800; 
+            text-transform: uppercase; 
+            padding: 14px 16px; 
+            border-bottom: 2px solid #e2e8f0; 
+            position: sticky; 
+            top: 0; 
+            letter-spacing: 0.5px; 
+            z-index: 10;
+        }
+        td { 
+            padding: 14px 16px; 
+            font-size: 0.75rem; 
+            color: #334155; 
+            border-bottom: 1px solid #f1f5f9; 
+            font-weight: 500;
+        }
+        tr:hover td { 
+            background-color: #f8fafc; 
+        }
+        .empty-state { 
+            text-align: center; 
+            padding: 40px; 
+            color: #94a3b8; 
+            font-weight: 600; 
+        }
+        
+        #loader { 
+            text-align: center; 
+            padding: 50px; 
+            color: #64748b; 
+            font-weight: 600; 
+            font-size: 0.9rem; 
+        }
     </style>
 </head>
 <body>
-    <div class="header-actions">
-        <h2>FIRETRUCK OPERATIONS DATA VIEW</h2>
-        <input type="text" id="searchInput" class="search-box" placeholder="Search records..." onkeyup="filterTable()">
-    </div>
-    <div class="table-container">
-        <table id="dataTable">
-            <thead>
-                <tr>
-                    <th>Control No.</th>
-                    <th>Date</th>
-                    <th>Requestor</th>
-                    <th>Assistance Provided</th>
-                    <th>Location</th>
-                </tr>
-            </thead>
-            <tbody id="tableBody"></tbody>
-        </table>
-        <div id="loader">Fetching records securely from database...</div>
+
+    <div class="dashboard-container">
+        
+        <div class="header-top">
+            <h2>FIRETRUCK OPERATIONS DATA VIEW</h2>
+            <div id="recordCount" class="record-count">Records Found: 0</div>
+        </div>
+
+        <div class="filter-panel">
+            <div class="filter-group" style="flex: 1.5;">
+                <label for="searchInput">Search Data</label>
+                <input type="text" id="searchInput" class="filter-input" placeholder="Search Control No., Location..." onkeyup="applyFilters()">
+            </div>
+            <div class="filter-group">
+                <label for="yearFilter">Filter by Year</label>
+                <select id="yearFilter" class="filter-input" onchange="applyFilters()">
+                    <option value="all">All Years</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="monthFilter">Filter by Month</label>
+                <select id="monthFilter" class="filter-input" onchange="applyFilters()">
+                    <option value="all">All Months</option>
+                </select>
+            </div>
+            <div class="filter-group" style="flex: 1.5;">
+                <label for="assistanceFilter">Assistance Provided</label>
+                <select id="assistanceFilter" class="filter-input" onchange="applyFilters()">
+                    <option value="all">All Assistance Types</option>
+                </select>
+            </div>
+            <button onclick="resetFilters()" class="btn-reset">Reset Filters</button>
+        </div>
+
+        <div class="table-container">
+            <table id="dataTable">
+                <thead>
+                    <tr>
+                        <th>Control No.</th>
+                        <th>Date</th>
+                        <th>Requestor</th>
+                        <th>Assistance Provided</th>
+                        <th>Location</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody"></tbody>
+            </table>
+            <div id="loader">Fetching records securely from database...</div>
+        </div>
+
     </div>
 
     <script>
-        // *** PASTE YOUR NEW WEB APP URL HERE ***
-        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyTNh96ex_BnTTjiBRXbxU52DixCKzecQ9qWvpjThTA3nxjjitfbra-vixyzE1rU8mx/exec";
-        let tableData = [];
+        // *** PASTE YOUR WEB APP URL HERE ***
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyTNh96ex_BnTTjiBRXbxU52DixCKzecQ9qWvpjThTA3nxjjitfbra-vixyzE1rU8mx/exec"; 
+        
+        let rawTableData = [];
 
         async function fetchFiretruckData() {
             try {
@@ -58,17 +241,111 @@
                     return;
                 }
 
-                tableData = data;
-                renderTable(tableData);
+                rawTableData = data;
+                populateDynamicFilters(rawTableData);
+                renderTable(rawTableData);
+                
             } catch (error) {
                 console.error("Error fetching data:", error);
                 document.getElementById('loader').innerText = "Failed to load data. Please check your connection.";
             }
         }
 
+        // Dynamically extract unique values and populate dropdowns
+        function populateDynamicFilters(data) {
+            const years = new Set();
+            const months = new Set();
+            const assistances = new Set();
+
+            const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+            data.forEach(row => {
+                const dateVal = row['Date'] || row['DATE'] || '';
+                const astVal = row['Assistance Provided'] || row['ASSISTANCE PROVIDED'] || '';
+
+                // Extract unique Assistance strings (trim whitespace to prevent duplicates)
+                if (astVal && astVal !== '-' && astVal.trim() !== '') {
+                    assistances.add(astVal.trim());
+                }
+
+                // Parse Date to extract Month and Year
+                if (dateVal && dateVal !== '-') {
+                    const parsedDate = new Date(dateVal);
+                    if (!isNaN(parsedDate.getTime())) {
+                        years.add(parsedDate.getFullYear().toString());
+                        months.add(monthNames[parsedDate.getMonth()]); // Get actual month name
+                    }
+                }
+            });
+
+            // Populate Year Dropdown (Highest year first)
+            const yearSelect = document.getElementById('yearFilter');
+            [...years].sort().reverse().forEach(year => {
+                yearSelect.add(new Option(year, year));
+            });
+
+            // Populate Month Dropdown (Chronological order)
+            const monthSelect = document.getElementById('monthFilter');
+            [...months].sort((a, b) => monthNames.indexOf(a) - monthNames.indexOf(b)).forEach(month => {
+                monthSelect.add(new Option(month, month));
+            });
+
+            // Populate Assistance Dropdown (Alphabetical order)
+            const astSelect = document.getElementById('assistanceFilter');
+            [...assistances].sort().forEach(ast => {
+                astSelect.add(new Option(ast, ast));
+            });
+        }
+
+        // Applies all selected filters simultaneously
+        function applyFilters() {
+            const searchQuery = document.getElementById('searchInput').value.toLowerCase();
+            const yearQuery = document.getElementById('yearFilter').value;
+            const monthQuery = document.getElementById('monthFilter').value;
+            const astQuery = document.getElementById('assistanceFilter').value;
+
+            const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+            const filteredData = rawTableData.filter(row => {
+                const dateVal = row['Date'] || row['DATE'] || '';
+                const astVal = (row['Assistance Provided'] || row['ASSISTANCE PROVIDED'] || '').trim();
+                
+                let rowYear = "";
+                let rowMonth = "";
+
+                // Parse row date to compare
+                if (dateVal && dateVal !== '-') {
+                    const parsedDate = new Date(dateVal);
+                    if (!isNaN(parsedDate.getTime())) {
+                        rowYear = parsedDate.getFullYear().toString();
+                        rowMonth = monthNames[parsedDate.getMonth()];
+                    }
+                }
+
+                // Check matches
+                const matchesSearch = Object.values(row).some(val => String(val).toLowerCase().includes(searchQuery));
+                const matchesYear = (yearQuery === 'all') || (rowYear === yearQuery);
+                const matchesMonth = (monthQuery === 'all') || (rowMonth === monthQuery);
+                const matchesAst = (astQuery === 'all') || (astVal === astQuery);
+
+                return matchesSearch && matchesYear && matchesMonth && matchesAst;
+            });
+
+            renderTable(filteredData);
+        }
+
+        // Render data to HTML table
         function renderTable(data) {
             const tbody = document.getElementById('tableBody');
             tbody.innerHTML = '';
+            
+            // Update Record Counter
+            document.getElementById('recordCount').innerText = `Records Found: ${data.length}`;
+
+            if (data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="empty-state">No matching records found.</td></tr>';
+                return;
+            }
 
             data.forEach(row => {
                 const controlNo = row['Control No.'] || row['CONTROL NO.'] || '-';
@@ -81,22 +358,23 @@
 
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
-                    <td style="font-weight: 600;">${controlNo}</td>
+                    <td style="font-weight: 800; color: #2563eb;">${controlNo}</td>
                     <td>${dateVal}</td>
-                    <td>${requestor}</td>
-                    <td>${assistance}</td>
+                    <td style="font-weight: 600;">${requestor}</td>
+                    <td><span style="background: #e2e8f0; padding: 4px 8px; border-radius: 4px; font-size: 0.65rem; font-weight: 800;">${assistance}</span></td>
                     <td>${location}</td>
                 `;
                 tbody.appendChild(tr);
             });
         }
 
-        function filterTable() {
-            const query = document.getElementById('searchInput').value.toLowerCase();
-            const filtered = tableData.filter(row => {
-                return Object.values(row).some(val => String(val).toLowerCase().includes(query));
-            });
-            renderTable(filtered);
+        // Reset all filters back to default
+        function resetFilters() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('yearFilter').value = 'all';
+            document.getElementById('monthFilter').value = 'all';
+            document.getElementById('assistanceFilter').value = 'all';
+            applyFilters();
         }
 
         window.onload = fetchFiretruckData;
