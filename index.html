@@ -52,7 +52,7 @@
             border-radius: 8px;
             width: 24px;
             height: 24px;
-            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
         
         .header-title-wrapper:hover svg {
@@ -91,7 +91,7 @@
         #recordNum {
             font-size: 1.1rem;
             display: inline-block;
-            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+            transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
         }
         .count-pop {
             transform: scale(1.5);
@@ -109,7 +109,6 @@
             border: 1px solid #e2e8f0;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
             flex-shrink: 0;
-            transition: all 0.3s ease;
         }
 
         .filter-group {
@@ -138,24 +137,21 @@
             font-weight: 600;
             color: #1e293b;
             background-color: #f8fafc;
-            transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+            transition: all 0.2s ease-out;
             cursor: pointer;
             box-shadow: inset 0 2px 4px rgba(0,0,0,0.01);
         }
         
-        /* Floating Dropdown Hover Effect */
         .filter-input:hover {
             border-color: #94a3b8;
             background-color: #ffffff;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 12px rgba(0,0,0,0.05);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.03);
         }
 
         .filter-input:focus { 
             border-color: #3b82f6; 
             background-color: #ffffff;
             box-shadow: 0 0 0 3px rgba(59,130,246,0.15); 
-            transform: translateY(-2px);
         }
 
         .btn-reset {
@@ -207,6 +203,8 @@
             min-height: 0; 
             box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
             background: #ffffff;
+            /* Enable momentum scrolling on iOS */
+            -webkit-overflow-scrolling: touch;
         }
         table { 
             width: 100%; 
@@ -235,26 +233,53 @@
             border-bottom: 1px solid #f1f5f9; 
             font-weight: 600;
             text-transform: uppercase;
-            /* Smooth transition for the magnetic hover effect */
-            transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
-        }
-        
-        tr {
-            transition: background-color 0.3s ease;
         }
 
-        /* MAGNETIC ROW HOVER EFFECT */
-        tr:hover td { 
-            background-color: #eff6ff; 
-            color: #0f172a;
-            /* Slides the text slightly to the right */
-            transform: translateX(4px); 
-            border-bottom-color: transparent;
+        /* 
+         * GPU-ACCELERATED ANIMATION 
+         * translate3d forces the browser to use the GPU (Graphics Card) for 60fps rendering
+         */
+        @keyframes slideInUp {
+            0% { opacity: 0; transform: translate3d(0, 15px, 0); }
+            100% { opacity: 1; transform: translate3d(0, 0, 0); }
         }
         
-        /* Blue Accent Bar on Hover */
+        .animate-row {
+            animation: slideInUp 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+            will-change: transform, opacity; /* Tells the browser to prepare for animation */
+        }
+        
+        /* 
+         * OPTIMIZED HOVER STATE
+         * Removing translateX on text to prevent layout thrashing and jitter.
+         * Using pseudo-elements and background colors for butter-smooth hovers.
+         */
+        tr {
+            transition: background-color 0.15s ease-out;
+            position: relative;
+        }
+
+        tr::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 4px;
+            background-color: #2563eb;
+            opacity: 0;
+            transition: opacity 0.2s ease-out;
+        }
+
+        tr:hover { 
+            background-color: #eff6ff; 
+        }
+        
+        tr:hover::before {
+            opacity: 1;
+        }
+        
         tr:hover td:first-child {
-            box-shadow: inset 4px 0 0 #2563eb;
             color: #1d4ed8 !important;
         }
         
@@ -269,16 +294,16 @@
             letter-spacing: 0.5px;
             display: inline-block;
             border: 1px solid #e2e8f0;
-            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transition: all 0.2s ease-out;
+            will-change: transform, background-color;
         }
         
-        /* Badge Lights up on Row Hover */
         tr:hover .badge-pill {
             background: #2563eb;
             color: #ffffff;
             border-color: #2563eb;
-            transform: scale(1.05);
-            box-shadow: 0 4px 12px rgba(37,99,235,0.3);
+            transform: scale(1.03);
+            box-shadow: 0 4px 10px rgba(37,99,235,0.25);
         }
 
         .empty-state { 
@@ -298,17 +323,6 @@
             align-items: center;
             justify-content: center;
             gap: 10px;
-        }
-        
-        /* FIXED STAGGERED ROW ANIMATIONS */
-        @keyframes slideInUp {
-            0% { opacity: 0; transform: translateY(20px); }
-            100% { opacity: 1; transform: translateY(0); }
-        }
-        
-        .animate-row {
-            /* 'both' ensures the row is completely invisible before its delay starts */
-            animation: slideInUp 0.5s cubic-bezier(0.165, 0.84, 0.44, 1) both;
         }
     </style>
 </head>
@@ -387,7 +401,7 @@
     </div>
 
     <script>
-        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyTNh96ex_BnTTjiBRXbxU52DixCKzecQ9qWvpjThTA3nxjjitfbra-vixyzE1rU8mx/exec"; 
+        const WEB_APP_URL = "YOUR_NEW_WEB_APP_URL_HERE"; 
         
         let rawTableData = [];
 
@@ -510,14 +524,13 @@
             const numEl = document.getElementById('recordNum');
             numEl.innerText = number;
             
-            // Remove the class instantly, force a reflow, then add it back to restart the animation
             numEl.classList.remove('count-pop');
             void numEl.offsetWidth; 
             numEl.classList.add('count-pop');
             
             setTimeout(() => {
                 numEl.classList.remove('count-pop');
-            }, 400);
+            }, 300);
         }
 
         function renderTable(data) {
@@ -530,6 +543,11 @@
                 tbody.innerHTML = '<tr><td colspan="5" class="empty-state"><svg width="40" height="40" style="margin-bottom: 10px; opacity: 0.5;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg><br>NO MATCHING RECORDS FOUND.</td></tr>';
                 return;
             }
+
+            // DocumentFragment is a lightweight container that holds the DOM nodes.
+            // Rendering the whole table into the fragment, and then pushing the fragment
+            // to the page ONCE drastically improves frame rates (60fps).
+            const fragment = document.createDocumentFragment();
 
             data.forEach((row, index) => {
                 const controlNo = String(row['Control No.'] || row['CONTROL NO.'] || '-').toUpperCase();
@@ -550,19 +568,25 @@
                 if (controlNo === '-' && dateVal === '-' && requestor === '-') return;
 
                 const tr = document.createElement('tr');
-                // The 'both' property in the CSS ensures this works perfectly every time it's called
                 tr.className = 'animate-row';
-                tr.style.animationDelay = `${index * 0.03}s`;
+                
+                // Cap the maximum animation delay so filtering huge lists doesn't take 5 seconds to finish cascading
+                const animDelay = Math.min(index * 0.015, 0.4);
+                tr.style.animationDelay = `${animDelay}s`;
 
                 tr.innerHTML = `
-                    <td style="font-weight: 800; color: #2563eb;">${controlNo}</td>
+                    <td style="font-weight: 800; color: #2563eb; position: relative;">${controlNo}</td>
                     <td style="color: #64748b;">${dateVal}</td>
                     <td style="font-weight: 700; color: #0f172a;">${requestor}</td>
                     <td><span class="badge-pill">${cleanAst}</span></td>
                     <td style="color: #475569;">${location}</td>
                 `;
-                tbody.appendChild(tr);
+                
+                fragment.appendChild(tr);
             });
+            
+            // Single DOM insertion for maximum performance
+            tbody.appendChild(fragment);
         }
 
         function resetFilters() {
