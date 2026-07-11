@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firetruck Operations Data</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; margin: 0; padding: 20px; background-color: #ffffff; color: #1e293b; }
+        #loader { text-align: center; padding: 50px; color: #64748b; font-weight: 600; font-size: 0.9rem; }
+        .header-actions { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .header-actions h2 { font-size: 1rem; font-weight: 800; margin: 0; color: #0f172a; border-left: 4px solid #2563eb; padding-left: 10px; text-transform: uppercase; }
+        .search-box { padding: 8px 16px; border: 1px solid #cbd5e1; border-radius: 20px; font-size: 0.8rem; outline: none; width: 250px; font-family: 'Inter', sans-serif; }
+        .search-box:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
+        .table-container { width: 100%; overflow-x: auto; border-radius: 8px; border: 1px solid #e2e8f0; }
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        th { background-color: #f8fafc; color: #475569; font-size: 0.65rem; font-weight: 800; text-transform: uppercase; padding: 12px 16px; border-bottom: 2px solid #e2e8f0; position: sticky; top: 0; letter-spacing: 0.5px; }
+        td { padding: 12px 16px; font-size: 0.75rem; color: #334155; border-bottom: 1px solid #f1f5f9; }
+        tr:hover td { background-color: #f8fafc; }
+        .empty-state { text-align: center; padding: 30px; color: #94a3b8; font-weight: 600; }
+    </style>
+</head>
+<body>
+    <div class="header-actions">
+        <h2>FIRETRUCK OPERATIONS DATA VIEW</h2>
+        <input type="text" id="searchInput" class="search-box" placeholder="Search records..." onkeyup="filterTable()">
+    </div>
+    <div class="table-container">
+        <table id="dataTable">
+            <thead>
+                <tr>
+                    <th>Control No.</th>
+                    <th>Date</th>
+                    <th>Requestor</th>
+                    <th>Assistance Provided</th>
+                    <th>Location</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+        </table>
+        <div id="loader">Fetching records securely from database...</div>
+    </div>
+
+    <script>
+        // *** PASTE YOUR NEW WEB APP URL HERE ***
+        const WEB_APP_URL = "YOUR_NEW_WEB_APP_URL_HERE";
+        let tableData = [];
+
+        async function fetchFiretruckData() {
+            try {
+                const response = await fetch(WEB_APP_URL);
+                const data = await response.json();
+                
+                document.getElementById('loader').style.display = 'none';
+                
+                if (data.error || data.length === 0) {
+                    document.getElementById('tableBody').innerHTML = '<tr><td colspan="5" class="empty-state">No records found.</td></tr>';
+                    return;
+                }
+
+                tableData = data;
+                renderTable(tableData);
+            } catch (error) {
+                console.error("Error fetching data:", error);
+                document.getElementById('loader').innerText = "Failed to load data. Please check your connection.";
+            }
+        }
+
+        function renderTable(data) {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+
+            data.forEach(row => {
+                const controlNo = row['Control No.'] || row['CONTROL NO.'] || '-';
+                const dateVal = row['Date'] || row['DATE'] || '-';
+                const requestor = row['Requestor'] || row['REQUESTOR'] || '-';
+                const assistance = row['Assistance Provided'] || row['ASSISTANCE PROVIDED'] || '-';
+                const location = row['Location'] || row['LOCATION'] || '-';
+
+                if (controlNo === '-' && dateVal === '-' && requestor === '-') return;
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td style="font-weight: 600;">${controlNo}</td>
+                    <td>${dateVal}</td>
+                    <td>${requestor}</td>
+                    <td>${assistance}</td>
+                    <td>${location}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function filterTable() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            const filtered = tableData.filter(row => {
+                return Object.values(row).some(val => String(val).toLowerCase().includes(query));
+            });
+            renderTable(filtered);
+        }
+
+        window.onload = fetchFiretruckData;
+    </script>
+</body>
+</html>
