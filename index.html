@@ -112,6 +112,8 @@
             height: fit-content;
             align-self: flex-end;
             font-family: 'Inter', sans-serif;
+            text-transform: uppercase;
+            font-size: 0.75rem;
         }
         .btn-reset:hover {
             background-color: #e2e8f0;
@@ -149,7 +151,8 @@
             font-size: 0.75rem; 
             color: #334155; 
             border-bottom: 1px solid #f1f5f9; 
-            font-weight: 500;
+            font-weight: 600;
+            text-transform: uppercase;
         }
         tr:hover td { 
             background-color: #f8fafc; 
@@ -176,30 +179,30 @@
         
         <div class="header-top">
             <h2>FIRETRUCK OPERATIONS DATA VIEW</h2>
-            <div id="recordCount" class="record-count">Records Found: 0</div>
+            <div id="recordCount" class="record-count">RECORDS FOUND: 0</div>
         </div>
 
         <div class="filter-panel">
             <div class="filter-group" style="flex: 1.5;">
                 <label for="searchInput">Search Data</label>
-                <input type="text" id="searchInput" class="filter-input" placeholder="Search Control No., Location..." onkeyup="applyFilters()">
+                <input type="text" id="searchInput" class="filter-input" placeholder="SEARCH CONTROL NO., LOCATION..." onkeyup="applyFilters()">
             </div>
             <div class="filter-group">
                 <label for="yearFilter">Filter by Year</label>
                 <select id="yearFilter" class="filter-input" onchange="applyFilters()">
-                    <option value="all">All Years</option>
+                    <option value="all">ALL YEARS</option>
                 </select>
             </div>
             <div class="filter-group">
                 <label for="monthFilter">Filter by Month</label>
                 <select id="monthFilter" class="filter-input" onchange="applyFilters()">
-                    <option value="all">All Months</option>
+                    <option value="all">ALL MONTHS</option>
                 </select>
             </div>
             <div class="filter-group" style="flex: 1.5;">
                 <label for="assistanceFilter">Assistance Provided</label>
                 <select id="assistanceFilter" class="filter-input" onchange="applyFilters()">
-                    <option value="all">All Assistance Types</option>
+                    <option value="all">ALL ASSISTANCE TYPES</option>
                 </select>
             </div>
             <button onclick="resetFilters()" class="btn-reset">Reset Filters</button>
@@ -224,10 +227,26 @@
     </div>
 
     <script>
-        // *** PASTE YOUR WEB APP URL HERE ***
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyTNh96ex_BnTTjiBRXbxU52DixCKzecQ9qWvpjThTA3nxjjitfbra-vixyzE1rU8mx/exec"; 
         
         let rawTableData = [];
+
+        function cleanAssistanceText(rawText) {
+            if (!rawText) return '-';
+            let text = String(rawText).toUpperCase().trim();
+
+            if (text.includes("WATER RATIONING")) return "WATER RATIONING";
+            if (text.includes("STANDBY")) return "FIRETRUCK ON STANDBY";
+            if (text.includes("FIRE SUPPRESSION") || text.includes("FIRE SUPRESSION") || text.includes("GRASS FIRE") || text.includes("STRUCTURAL FIRE")) {
+                return "FIRE SUPPRESSION";
+            }
+            if (text.includes("WATERING OF PLANT")) return "WATERING OF PLANTS";
+            if (text.includes("WATER SUPPORT") || text.includes("SUPPLY ASSISTANCE")) return "WATER SUPPORT & SUPPLY";
+            if (text.includes("FLUSHING")) return "FLUSHING";
+            if (text.includes("DIALYSIS")) return "DIALYSIS CENTER ASSISTANCE";
+            
+            return text;
+        }
 
         async function fetchFiretruckData() {
             try {
@@ -237,7 +256,7 @@
                 document.getElementById('loader').style.display = 'none';
                 
                 if (data.error || data.length === 0) {
-                    document.getElementById('tableBody').innerHTML = '<tr><td colspan="5" class="empty-state">No records found.</td></tr>';
+                    document.getElementById('tableBody').innerHTML = '<tr><td colspan="5" class="empty-state">NO RECORDS FOUND.</td></tr>';
                     return;
                 }
 
@@ -247,73 +266,67 @@
                 
             } catch (error) {
                 console.error("Error fetching data:", error);
-                document.getElementById('loader').innerText = "Failed to load data. Please check your connection.";
+                document.getElementById('loader').innerText = "FAILED TO LOAD DATA. PLEASE CHECK YOUR CONNECTION.";
             }
         }
 
-        // Dynamically extract unique values and populate dropdowns
         function populateDynamicFilters(data) {
             const years = new Set();
             const months = new Set();
             const assistances = new Set();
 
-            const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+            const monthNames = ["JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE", "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"];
 
             data.forEach(row => {
                 const dateVal = row['Date'] || row['DATE'] || '';
-                const astVal = row['Assistance Provided'] || row['ASSISTANCE PROVIDED'] || '';
+                const rawAstVal = row['Assistance Provided'] || row['ASSISTANCE PROVIDED'] || '';
+                
+                const cleanAst = cleanAssistanceText(rawAstVal);
 
-                // Extract unique Assistance strings (trim whitespace to prevent duplicates)
-                if (astVal && astVal !== '-' && astVal.trim() !== '') {
-                    assistances.add(astVal.trim());
+                if (cleanAst && cleanAst !== '-') {
+                    assistances.add(cleanAst);
                 }
 
-                // Parse Date to extract Month and Year
                 if (dateVal && dateVal !== '-') {
                     const parsedDate = new Date(dateVal);
                     if (!isNaN(parsedDate.getTime())) {
                         years.add(parsedDate.getFullYear().toString());
-                        months.add(monthNames[parsedDate.getMonth()]); // Get actual month name
+                        months.add(monthNames[parsedDate.getMonth()]);
                     }
                 }
             });
 
-            // Populate Year Dropdown (Highest year first)
             const yearSelect = document.getElementById('yearFilter');
             [...years].sort().reverse().forEach(year => {
                 yearSelect.add(new Option(year, year));
             });
 
-            // Populate Month Dropdown (Chronological order)
             const monthSelect = document.getElementById('monthFilter');
             [...months].sort((a, b) => monthNames.indexOf(a) - monthNames.indexOf(b)).forEach(month => {
                 monthSelect.add(new Option(month, month));
             });
 
-            // Populate Assistance Dropdown (Alphabetical order)
             const astSelect = document.getElementById('assistanceFilter');
             [...assistances].sort().forEach(ast => {
                 astSelect.add(new Option(ast, ast));
             });
         }
 
-        // Applies all selected filters simultaneously
         function applyFilters() {
-            const searchQuery = document.getElementById('searchInput').value.toLowerCase();
+            const searchQuery = document.getElementById('searchInput').value.toUpperCase();
             const yearQuery = document.getElementById('yearFilter').value;
             const monthQuery = document.getElementById('monthFilter').value;
             const astQuery = document.getElementById('assistanceFilter').value;
 
-            const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+            const monthNames = ["JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE", "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"];
 
             const filteredData = rawTableData.filter(row => {
                 const dateVal = row['Date'] || row['DATE'] || '';
-                const astVal = (row['Assistance Provided'] || row['ASSISTANCE PROVIDED'] || '').trim();
+                const cleanAst = cleanAssistanceText(row['Assistance Provided'] || row['ASSISTANCE PROVIDED'] || '');
                 
                 let rowYear = "";
                 let rowMonth = "";
 
-                // Parse row date to compare
                 if (dateVal && dateVal !== '-') {
                     const parsedDate = new Date(dateVal);
                     if (!isNaN(parsedDate.getTime())) {
@@ -322,11 +335,10 @@
                     }
                 }
 
-                // Check matches
-                const matchesSearch = Object.values(row).some(val => String(val).toLowerCase().includes(searchQuery));
+                const matchesSearch = Object.values(row).some(val => String(val).toUpperCase().includes(searchQuery));
                 const matchesYear = (yearQuery === 'all') || (rowYear === yearQuery);
                 const matchesMonth = (monthQuery === 'all') || (rowMonth === monthQuery);
-                const matchesAst = (astQuery === 'all') || (astVal === astQuery);
+                const matchesAst = (astQuery === 'all') || (cleanAst === astQuery);
 
                 return matchesSearch && matchesYear && matchesMonth && matchesAst;
             });
@@ -334,41 +346,47 @@
             renderTable(filteredData);
         }
 
-        // Render data to HTML table
         function renderTable(data) {
             const tbody = document.getElementById('tableBody');
             tbody.innerHTML = '';
             
-            // Update Record Counter
-            document.getElementById('recordCount').innerText = `Records Found: ${data.length}`;
+            document.getElementById('recordCount').innerText = `RECORDS FOUND: ${data.length}`;
 
             if (data.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" class="empty-state">No matching records found.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="5" class="empty-state">NO MATCHING RECORDS FOUND.</td></tr>';
                 return;
             }
 
             data.forEach(row => {
-                const controlNo = row['Control No.'] || row['CONTROL NO.'] || '-';
-                const dateVal = row['Date'] || row['DATE'] || '-';
-                const requestor = row['Requestor'] || row['REQUESTOR'] || '-';
-                const assistance = row['Assistance Provided'] || row['ASSISTANCE PROVIDED'] || '-';
-                const location = row['Location'] || row['LOCATION'] || '-';
+                const controlNo = String(row['Control No.'] || row['CONTROL NO.'] || '-').toUpperCase();
+                
+                let dateVal = String(row['Date'] || row['DATE'] || '-');
+                if (dateVal !== '-') {
+                    const parsedDate = new Date(dateVal);
+                    if (!isNaN(parsedDate.getTime())) {
+                        dateVal = parsedDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }).toUpperCase();
+                    }
+                }
+
+                const requestor = String(row['Requestor'] || row['REQUESTOR'] || '-').toUpperCase();
+                const location = String(row['Location'] || row['LOCATION'] || '-').toUpperCase();
+                
+                const cleanAst = cleanAssistanceText(row['Assistance Provided'] || row['ASSISTANCE PROVIDED'] || '-');
 
                 if (controlNo === '-' && dateVal === '-' && requestor === '-') return;
 
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td style="font-weight: 800; color: #2563eb;">${controlNo}</td>
-                    <td>${dateVal}</td>
-                    <td style="font-weight: 600;">${requestor}</td>
-                    <td><span style="background: #e2e8f0; padding: 4px 8px; border-radius: 4px; font-size: 0.65rem; font-weight: 800;">${assistance}</span></td>
-                    <td>${location}</td>
+                    <td style="color: #475569;">${dateVal}</td>
+                    <td style="font-weight: 700; color: #0f172a;">${requestor}</td>
+                    <td><span style="background: #e2e8f0; color: #1e293b; padding: 4px 8px; border-radius: 4px; font-size: 0.65rem; font-weight: 800; letter-spacing: 0.5px;">${cleanAst}</span></td>
+                    <td style="color: #334155;">${location}</td>
                 `;
                 tbody.appendChild(tr);
             });
         }
 
-        // Reset all filters back to default
         function resetFilters() {
             document.getElementById('searchInput').value = '';
             document.getElementById('yearFilter').value = 'all';
