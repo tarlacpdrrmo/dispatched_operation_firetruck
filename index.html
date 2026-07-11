@@ -6,22 +6,28 @@
     <title>Firetruck Operations Data</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
+        /* --- UPDATED CSS FOR FULL-SCREEN LAYOUT --- */
         body { 
             font-family: 'Inter', sans-serif; 
             margin: 0; 
-            padding: 24px; 
-            background-color: #f1f5f9; 
+            padding: 0; /* Removed the outer margin */
+            background-color: #ffffff; 
             color: #1e293b; 
+            height: 100vh; /* Force body to take full screen height */
+            display: flex;
+            overflow: hidden; /* Prevent double scrollbars */
         }
         
         /* Main Container */
         .dashboard-container {
             background: #ffffff;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
             padding: 24px;
-            max-width: 1400px;
-            margin: 0 auto;
+            width: 100%;
+            max-width: 100%; /* Removed 1400px limit to fill side margins */
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column; /* Allows internal elements to stretch */
+            flex: 1;
         }
 
         /* Header & Filters */
@@ -32,6 +38,7 @@
             margin-bottom: 20px;
             border-bottom: 2px solid #e2e8f0;
             padding-bottom: 16px;
+            flex-shrink: 0;
         }
         
         .header-top h2 { 
@@ -64,6 +71,7 @@
             padding: 16px;
             border-radius: 8px;
             border: 1px solid #e2e8f0;
+            flex-shrink: 0;
         }
 
         .filter-group {
@@ -120,13 +128,14 @@
             color: #0f172a;
         }
 
-        /* Table Styles */
+        /* Table Styles - Stretches to fill bottom margin */
         .table-container { 
             width: 100%; 
-            overflow-x: auto; 
+            overflow: auto; 
             border-radius: 8px; 
             border: 1px solid #e2e8f0; 
-            max-height: 60vh;
+            flex: 1; /* Magic fix: forces the table to stretch to the bottom */
+            min-height: 0; /* Required for the scrollbar to work properly with flexbox */
         }
         table { 
             width: 100%; 
